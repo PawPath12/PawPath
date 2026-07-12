@@ -1,0 +1,197 @@
+// PawPath — veterinary marketplace schema.
+// SQLite in dev (see prisma.config.ts / DATABASE_URL). To move to Postgres for
+// production, change `provider` below to "postgresql" and update DATABASE_URL —
+// no model changes required.
+//
+// SQLite does not support Prisma enums or scalar lists, so role/status fields are
+// plain strings with allowed values documented inline (validated in src/lib/constants.ts),
+// and `specialties` is a comma-separated string.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("CLIENT") // CLIENT | VET | ADMIN
+  name         String
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+
+  ownedClinic   Clinic?        @relation("ClinicOwner")
+  vetProfile    Vet?
+  pets          Pet[]
+  appointments  Appointment[]  @relation("ClientAppointments")
+  reviews       Review[]
+  conversations Conversation[] @relation("ClientConversations")
+  messages      Message[]
+}
+
+model Clinic {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  address     String   @default("")
+  city        String
+  phone       String   @default("")
+  avatarUrl   String?
+  avgRating   Float    @default(0)
+  reviewCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  ownerUserId String @unique
+  owner       User   @relation("ClinicOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  vets          Vet[]
+  services      Service[]
+  availability  Availability[]
+  appointments  Appointment[]
+  reviews       Review[]
+  conversations Conversation[]
+}
+
+model Vet {
+  id          String  @id @default(cuid())
+  name        String
+  bio         String  @default("")
+  specialties String  @default("") // comma-separated
+  photoUrl    String?
+
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
+
+  availability Availability[]
+  appointments Appointment[]
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  priceCents  Int
+  durationMin Int      @default(30)
+  createdAt   DateTime @default(now())
+
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  appointments Appointment[]
+}
+
+model Availability {
+  id        String @id @default(cuid())
+  dayOfWeek Int // 0=Sunday .. 6=Saturday
+  startTime String // "HH:mm"
+  endTime   String // "HH:mm"
+
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  vetId String?
+  vet   Vet?   @relation(fields: [vetId], references: [id], onDelete: Cascade)
+}
+
+model Pet {
+  id        String    @id @default(cuid())
+  name      String
+  species   String // Dog | Cat | Bird | Rabbit | Reptile | Other
+  breed     String?
+  birthdate DateTime?
+  notes     String    @default("")
+  createdAt DateTime  @default(now())
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id        String   @id @default(cuid())
+  startAt   DateTime
+  endAt     DateTime
+  status    String   @default("PENDING") // PENDING | CONFIRMED | COMPLETED | CANCELLED
+  notes     String   @default("")
+  createdAt DateTime @default(now())
+
+  clientId String
+  client   User   @relation("ClientAppointments", fields: [clientId], references: [id], onDelete: Cascade)
+
+  petId String
+  pet   Pet   @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  vetId String
+  vet   Vet   @relation(fields: [vetId], references: [id], onDelete: Cascade)
+
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  review Review?
+
+  @@index([clinicId, startAt])
+  @@index([vetId, startAt])
+  @@index([clientId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int // 1..5
+  comment   String   @default("")
+  createdAt DateTime @default(now())
+
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  appointmentId String?      @unique
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([clinicId])
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  clientId String
+  client   User   @relation("ClientConversations", fields: [clientId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+
+  @@unique([clinicId, clientId])
+}
+
+model Message {
+  id         String    @id @default(cuid())
+  body       String
+  senderRole String // CLIENT | VET
+  createdAt  DateTime  @default(now())
+  readAt     DateTime?
+
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
