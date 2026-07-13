@@ -41,23 +41,29 @@ const PAWS: { top: string; left: string; size: number; rot: number; o: number; f
   { top: "86%", left: "68%", size: 50, rot: -75, o: 0.05 },
 ];
 
-/** Faint paw prints scattered behind hero content. Purely decorative. */
+/** Faint paw prints scattered behind hero content, gently drifting. Decorative. */
 export function PawsBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
       {PAWS.map((p, i) => (
-        <PawPrint
+        <span
           key={i}
-          className="absolute text-ink"
+          className="animate-paw-float absolute text-ink"
           style={{
             top: p.top,
             left: p.left,
             width: p.size,
             height: p.size,
             opacity: p.o,
-            transform: `rotate(${p.rot}deg)${p.flip ? " scaleX(-1)" : ""}`,
+            animationDuration: `${7 + (i % 6)}s`,
+            animationDelay: `${(i % 7) * 0.6}s`,
           }}
-        />
+        >
+          <PawPrint
+            className="h-full w-full"
+            style={{ transform: `rotate(${p.rot}deg)${p.flip ? " scaleX(-1)" : ""}` }}
+          />
+        </span>
       ))}
     </div>
   );

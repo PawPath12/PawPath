@@ -41,6 +41,23 @@ h1 {
   letter-spacing: -0.015em;
 }
 
+/* Gentle drifting motion for the decorative background paws. */
+@keyframes paw-float {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(5px, -12px); }
+  100% { transform: translate(0, 0); }
+}
+.animate-paw-float {
+  animation-name: paw-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-paw-float {
+    animation: none;
+  }
+}
+
 /* Thin, tidy scrollbars for chat/list panes. */
 .scroll-slim::-webkit-scrollbar {
   width: 8px;
