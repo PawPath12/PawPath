@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { auth, signOut } from "@/lib/auth";
-import { LogoMark } from "@/components/Logo";
 
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -20,11 +19,9 @@ export async function Nav() {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex items-center gap-2.5 text-ink">
-          <LogoMark className="h-9 w-auto" />
-          <span className="font-display text-2xl font-semibold tracking-tight">
-            Paw Path
-          </span>
+        <Link href="/" className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/pawpath-logo.png" alt="PawPath" className="h-10 w-auto" />
         </Link>
 
         <div className="flex items-center gap-1.5">
