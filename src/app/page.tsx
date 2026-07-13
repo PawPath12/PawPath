@@ -28,9 +28,9 @@ export default async function Home() {
   });
 
   const steps = [
-    { n: "01", title: "Search & compare", text: "Filter by city, specialty, and service to find the perfect match." },
-    { n: "02", title: "Book instantly", text: "Pick an open time from real availability — no phone tag." },
-    { n: "03", title: "Track & manage", text: "Keep your pet's whole appointment history in one place." },
+    { n: "01", icon: "🔍", title: "Search & compare", text: "Filter by city, specialty, and service to find the perfect match." },
+    { n: "02", icon: "📅", title: "Book instantly", text: "Pick an open time from real availability — no phone tag." },
+    { n: "03", icon: "🐶", title: "Track & manage", text: "Keep your pet's whole appointment history in one place." },
   ];
 
   return (
@@ -118,7 +118,10 @@ export default async function Home() {
           <div className="mx-auto mt-14 grid max-w-4xl gap-12 text-left sm:grid-cols-3">
             {steps.map((s) => (
               <div key={s.title}>
-                <span className="font-display text-4xl font-semibold text-brand-600">{s.n}</span>
+                <div className="flex items-center gap-2.5">
+                  <span className="font-display text-4xl font-semibold text-brand-600">{s.n}</span>
+                  <span className="text-3xl">{s.icon}</span>
+                </div>
                 <h3 className="mt-4 font-display text-xl font-semibold text-ink">{s.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">{s.text}</p>
               </div>
