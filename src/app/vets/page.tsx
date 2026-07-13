@@ -64,7 +64,7 @@ export default async function VetsPage({ searchParams }: { searchParams: SearchP
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">Find a veterinarian</h1>
+      <h1 className="text-3xl font-bold text-ink sm:text-4xl">Find a veterinarian</h1>
       <p className="mt-2 text-slate-500">
         {clinics.length} clinic{clinics.length === 1 ? "" : "s"}
         {specialty ? ` offering ${specialty}` : ""} available
@@ -117,11 +117,11 @@ export default async function VetsPage({ searchParams }: { searchParams: SearchP
       </form>
 
       {clinics.length === 0 ? (
-        <div className="mt-16 text-center">
-          <p className="text-5xl">🔍</p>
-          <p className="mt-4 text-lg font-medium text-slate-700">No clinics match your filters</p>
-          <Link href="/vets" className="mt-2 inline-block text-sm font-semibold text-accent-700 hover:underline">
-            Clear filters
+        <div className="mt-20 border-t border-slate-200 pt-16 text-center">
+          <p className="font-display text-2xl font-semibold text-ink">No clinics match your filters</p>
+          <p className="mt-2 text-slate-500">Try widening your search.</p>
+          <Link href="/vets" className="mt-4 inline-block text-sm font-semibold text-brand-700 hover:underline">
+            Clear all filters
           </Link>
         </div>
       ) : (

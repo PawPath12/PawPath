@@ -31,13 +31,13 @@ export async function Nav() {
             <>
               <Link
                 href="/login?as=owner"
-                className="rounded-lg border border-accent-600 px-3.5 py-2 text-sm font-semibold text-accent-700 transition hover:bg-accent-50"
+                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-ink"
               >
                 Owner Login
               </Link>
               <Link
                 href="/login?as=vet"
-                className="rounded-lg bg-brand-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
+                className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-white transition hover:bg-ink/90"
               >
                 Vet Login
               </Link>

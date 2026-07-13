@@ -55,12 +55,14 @@ export default async function ClinicProfile({
       {/* Header */}
       <div className="mt-4 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-start sm:justify-between">
         <div className="flex gap-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-gradient-to-br from-brand-50 to-accent-50 font-display text-3xl font-semibold text-accent-700">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-gradient-to-br from-brand-50 to-accent-50 font-display text-3xl font-semibold text-ink">
             {clinic.name.replace(/^(The |A )/, "").charAt(0).toUpperCase()}
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">{clinic.name}</h1>
-            <p className="mt-0.5 text-slate-500">📍 {clinic.address || clinic.city}</p>
+            <h1 className="text-3xl font-bold text-ink">{clinic.name}</h1>
+            <p className="mt-1 text-sm uppercase tracking-wide text-slate-400">
+              {clinic.address || clinic.city}
+            </p>
             {FEATURE_REVIEWS && (
               <div className="mt-2">
                 <Stars value={clinic.avgRating} showValue count={clinic.reviewCount} size="md" />
@@ -76,7 +78,11 @@ export default async function ClinicProfile({
             Book appointment
           </Link>
           <MessageClinicButton clinicId={clinic.id} canMessage={isClient} />
-          {clinic.phone && <p className="text-sm text-slate-500">📞 {clinic.phone}</p>}
+          {clinic.phone && (
+            <p className="text-sm text-slate-500">
+              <span className="text-slate-400">Call</span> {clinic.phone}
+            </p>
+          )}
         </div>
       </div>
 

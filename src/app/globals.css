@@ -6,18 +6,22 @@
   --font-display: var(--font-display-src), ui-serif, Georgia, "Times New Roman",
     serif;
 
-  /* Brand green */
-  --color-brand-50: #f0fdf4;
-  --color-brand-100: #dcfce7;
-  --color-brand-200: #bbf7d0;
-  --color-brand-400: #4ade80;
-  --color-brand-500: #22c55e;
-  --color-brand-600: #16a34a;
-  --color-brand-700: #15803d;
-  --color-brand-800: #166534;
+  /* Brand green — refined, deeper for a luxury feel */
+  --color-brand-50: #f1f7f2;
+  --color-brand-100: #dcecdf;
+  --color-brand-200: #bcd8c2;
+  --color-brand-400: #5c9770;
+  --color-brand-500: #3d7856;
+  --color-brand-600: #2f6347;
+  --color-brand-700: #24503a;
+  --color-brand-800: #1c3f2e;
+  --color-brand-900: #14311f;
 
   /* Brand ink — the deep navy from the PawPath logo */
   --color-ink: #17344f;
+
+  /* Warm ivory canvas */
+  --color-cream: #f7f5f0;
 
   /* Accent blue */
   --color-accent-50: #eff6ff;

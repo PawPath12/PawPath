@@ -32,15 +32,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${poppins.variable} ${playfair.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col bg-slate-50 text-slate-800">
+      <body className="flex min-h-full flex-col bg-cream text-slate-800">
         <Nav />
         <main className="flex-1">{children}</main>
-        <footer className="border-t border-slate-200 bg-white py-6">
+        <footer className="border-t border-slate-200 bg-white py-8">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 text-sm text-slate-400">
-            <span>
-              <span className="font-display font-semibold text-ink">Paw Path</span> — Never feel lost when it matters most.
+            <span className="tracking-wide">
+              <span className="font-display font-semibold text-ink">Paw Path</span>
+              <span className="mx-2 text-slate-300">·</span>
+              Never feel lost when it matters most.
             </span>
-            <span>Trusted by pet parents nationwide.</span>
+            <span className="tracking-wide">Trusted by pet parents nationwide.</span>
           </div>
         </footer>
       </body>
