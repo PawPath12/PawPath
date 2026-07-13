@@ -55,8 +55,8 @@ export function PawsBackdrop() {
             width: p.size,
             height: p.size,
             opacity: p.o,
-            animationDuration: `${7 + (i % 6)}s`,
-            animationDelay: `${(i % 7) * 0.6}s`,
+            animationDuration: `${4 + (i % 5)}s`,
+            animationDelay: `${(i % 7) * 0.4}s`,
           }}
         >
           <PawPrint
