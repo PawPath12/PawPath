@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { VetCard } from "@/components/VetCard";
+import { PawsBackdrop } from "@/components/Paws";
 import { FEATURE_REVIEWS } from "@/lib/features";
 
 const SPECIALTIES = [
@@ -29,8 +30,9 @@ export default async function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-accent-50">
-        <div className="mx-auto max-w-6xl px-4 py-24 text-center">
+      <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-accent-50">
+        <PawsBackdrop />
+        <div className="relative z-10 mx-auto max-w-6xl px-4 py-24 text-center">
           <span className="inline-flex items-center rounded-full bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-accent-700 shadow-sm ring-1 ring-accent-100">
             Trusted veterinary care, nationwide
           </span>
