@@ -12,15 +12,22 @@ function PawPrint({ style, className }: { style?: CSSProperties; className?: str
   );
 }
 
-// Scattered positions for the faint decorative paws.
-const PAWS: { top: string; left: string; size: number; rot: number; o: number }[] = [
-  { top: "10%", left: "5%", size: 70, rot: -18, o: 0.06 },
-  { top: "18%", left: "84%", size: 96, rot: 20, o: 0.06 },
-  { top: "58%", left: "10%", size: 84, rot: 28, o: 0.05 },
-  { top: "66%", left: "80%", size: 64, rot: -12, o: 0.06 },
-  { top: "40%", left: "90%", size: 52, rot: 8, o: 0.05 },
-  { top: "78%", left: "44%", size: 60, rot: -24, o: 0.045 },
-  { top: "6%", left: "52%", size: 46, rot: 14, o: 0.05 },
+// Scattered positions for the faint decorative paws, facing many directions.
+const PAWS: { top: string; left: string; size: number; rot: number; o: number; flip?: boolean }[] = [
+  { top: "8%", left: "4%", size: 66, rot: -18, o: 0.06 },
+  { top: "6%", left: "30%", size: 44, rot: 150, o: 0.05 },
+  { top: "5%", left: "58%", size: 50, rot: 24, o: 0.05, flip: true },
+  { top: "14%", left: "84%", size: 92, rot: 205, o: 0.06 },
+  { top: "30%", left: "16%", size: 56, rot: 96, o: 0.05, flip: true },
+  { top: "34%", left: "48%", size: 40, rot: -60, o: 0.045 },
+  { top: "40%", left: "90%", size: 54, rot: 300, o: 0.05 },
+  { top: "52%", left: "6%", size: 82, rot: 34, o: 0.055 },
+  { top: "56%", left: "36%", size: 46, rot: 190, o: 0.045, flip: true },
+  { top: "60%", left: "68%", size: 60, rot: -130, o: 0.05 },
+  { top: "68%", left: "88%", size: 70, rot: 120, o: 0.055, flip: true },
+  { top: "78%", left: "22%", size: 58, rot: -28, o: 0.05 },
+  { top: "82%", left: "52%", size: 48, rot: 245, o: 0.045 },
+  { top: "74%", left: "74%", size: 42, rot: 70, o: 0.05, flip: true },
 ];
 
 /** Faint paw prints scattered behind hero content. Purely decorative. */
@@ -37,7 +44,7 @@ export function PawsBackdrop() {
             width: p.size,
             height: p.size,
             opacity: p.o,
-            transform: `rotate(${p.rot}deg)`,
+            transform: `rotate(${p.rot}deg)${p.flip ? " scaleX(-1)" : ""}`,
           }}
         />
       ))}
