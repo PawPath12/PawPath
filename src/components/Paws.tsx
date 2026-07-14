@@ -14,7 +14,7 @@ function PawPrint({ style, className }: { style?: CSSProperties; className?: str
 
 // Deterministically scatter paws across the full page height (SSR-safe — no randomness).
 const COUNT = 40;
-const PAWS = Array.from({ length: COUNT }, (_, i) => ({
+const SCATTER = Array.from({ length: COUNT }, (_, i) => ({
   top: ((i * 61) % 95) + 2.5,
   left: ((i * 43 + (i % 5) * 9) % 90) + 3,
   size: 30 + ((i * 17) % 74),
@@ -22,6 +22,18 @@ const PAWS = Array.from({ length: COUNT }, (_, i) => ({
   flip: i % 2 === 0,
   o: 0.045 + ((i % 4) * 0.008),
 }));
+
+// An extra dense band across the very top so the hero never looks empty.
+const TOP_BAND = Array.from({ length: 10 }, (_, i) => ({
+  top: 2 + ((i * 3) % 15),
+  left: ((i * 41 + (i % 3) * 13) % 92) + 3,
+  size: 32 + ((i * 13) % 58),
+  rot: (i * 67) % 360,
+  flip: i % 2 === 1,
+  o: 0.05 + ((i % 3) * 0.008),
+}));
+
+const PAWS = [...TOP_BAND, ...SCATTER];
 
 /** Faint paw prints bouncing across the whole page behind content. Decorative. */
 export function PawsBackdrop() {
