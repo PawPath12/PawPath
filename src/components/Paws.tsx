@@ -12,19 +12,24 @@ function PawPrint({ style, className }: { style?: CSSProperties; className?: str
   );
 }
 
-// A continuous weaving trail of paws flowing evenly from top to bottom
-// (SSR-safe — deterministic, no randomness), so it never cuts off mid-page.
-const N = 34;
-const PAWS = Array.from({ length: N }, (_, i) => {
-  const t = i / (N - 1); // 0 (top) → 1 (bottom)
-  const wave = Math.sin(t * Math.PI * 3.5);
+// A jittered grid of paws covering the whole page — dense and evenly spread
+// in every direction (SSR-safe — deterministic, no randomness).
+const COLS = 6;
+const ROWS = 14;
+const colStep = 100 / COLS;
+const rowStep = 100 / ROWS;
+const PAWS = Array.from({ length: COLS * ROWS }, (_, i) => {
+  const r = Math.floor(i / COLS);
+  const c = i % COLS;
+  const jx = (((i * 37) % 100) / 100 - 0.5) * colStep * 0.95;
+  const jy = (((i * 53) % 100) / 100 - 0.5) * rowStep * 0.95;
   return {
-    top: 2 + t * 95, // even spread down the whole page
-    left: Math.max(2, Math.min(88, 50 + 40 * wave)),
-    size: 34 + ((i * 13) % 52),
-    rot: Math.round(30 * Math.cos(t * Math.PI * 3.5)) + (i % 2 ? 14 : -14),
+    top: Math.min(98, Math.max(1, rowStep * (r + 0.5) + jy)),
+    left: Math.min(93, Math.max(2, colStep * (c + 0.5) + jx)),
+    size: 30 + ((i * 17) % 66),
+    rot: (i * 47) % 360,
     flip: i % 2 === 0,
-    o: 0.13 + ((i % 3) * 0.02),
+    o: 0.15 + ((i % 4) * 0.022),
   };
 });
 
