@@ -34,11 +34,14 @@ export default async function Home() {
   ];
 
   return (
-    <div>
+    <div className="relative overflow-hidden">
+      {/* Paws bounce across the whole page, behind everything */}
+      <PawsBackdrop />
+
+      <div className="relative z-10">
       {/* Hero — fades softly into the page below */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-brand-50/60 via-cream to-cream">
-        <PawsBackdrop />
-        <div className="relative z-10 mx-auto max-w-3xl px-4 pb-16 pt-24 text-center">
+      <section className="bg-gradient-to-b from-brand-50/60 via-cream to-cream">
+        <div className="mx-auto max-w-3xl px-4 pb-16 pt-24 text-center">
           <span className="inline-flex items-center rounded-full bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-accent-700 shadow-sm ring-1 ring-accent-100">
             Trusted veterinary care, nationwide
           </span>
@@ -128,6 +131,7 @@ export default async function Home() {
             ))}
           </div>
         </section>
+      </div>
       </div>
     </div>
   );

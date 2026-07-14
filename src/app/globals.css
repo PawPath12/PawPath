@@ -45,11 +45,10 @@ h1 {
   letter-spacing: -0.015em;
 }
 
-/* Gentle drifting motion for the decorative background paws. */
+/* Bouncing motion for the decorative background paws. */
 @keyframes paw-float {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(10px, -26px) rotate(9deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-24px) rotate(6deg); }
 }
 .animate-paw-float {
   animation-name: paw-float;
