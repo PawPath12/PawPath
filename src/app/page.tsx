@@ -39,19 +39,34 @@ export default async function Home() {
       <PawsBackdrop />
 
       <div className="relative z-10">
-      {/* Hero — fades softly into the page below */}
-      <section className="bg-gradient-to-b from-brand-50/60 via-cream to-cream">
-        <div className="mx-auto max-w-3xl px-4 pb-16 pt-24 text-center">
-          <span className="inline-flex items-center rounded-full bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-accent-700 shadow-sm ring-1 ring-accent-100">
+      {/* Hero — full-bleed video with a scrim for legibility */}
+      <section className="relative isolate overflow-hidden bg-ink text-white">
+        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+        <video
+          className="absolute inset-0 -z-10 h-full w-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster="/hero-poster.jpg"
+        >
+          <source src="/hero.mp4" type="video/mp4" />
+        </video>
+        {/* scrim */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/75 via-ink/60 to-ink/80" />
+
+        <div className="mx-auto max-w-3xl px-4 py-32 text-center">
+          <span className="inline-flex items-center rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white ring-1 ring-inset ring-white/25 backdrop-blur">
             Trusted veterinary care, nationwide
           </span>
-          <h1 className="mt-8 text-4xl font-bold leading-tight text-ink sm:text-6xl">
+          <h1 className="mt-8 text-4xl font-bold leading-tight text-white drop-shadow-sm sm:text-6xl">
             Find &amp; book the right vet for your best friend
           </h1>
-          <p className="mx-auto mt-6 max-w-xl text-xl font-medium text-slate-700">
+          <p className="mx-auto mt-6 max-w-xl text-xl font-medium text-white/90">
             Never feel lost when it matters most.
           </p>
-          <p className="mx-auto mt-3 max-w-lg text-slate-500">
+          <p className="mx-auto mt-3 max-w-lg text-white/70">
             Search trusted clinics and board-certified specialists, compare services, and book
             appointments online — all in one place.
           </p>
@@ -64,7 +79,7 @@ export default async function Home() {
             </Link>
             <Link
               href="/login?as=vet"
-              className="rounded-full px-7 py-3 font-semibold text-ink underline-offset-4 transition hover:underline"
+              className="rounded-full border border-white/40 px-7 py-3 font-semibold text-white transition hover:bg-white/10"
             >
               List your clinic →
             </Link>
@@ -72,7 +87,7 @@ export default async function Home() {
 
           {/* Specialties woven right into the hero as a soft strip */}
           <div className="mt-14">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/70">
               Find a specialist
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -80,7 +95,7 @@ export default async function Home() {
                 <Link
                   key={s}
                   href={`/vets?specialty=${encodeURIComponent(s)}`}
-                  className="rounded-full border border-slate-200 bg-white/70 px-3.5 py-1.5 text-sm text-slate-600 transition hover:border-ink hover:text-ink"
+                  className="rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-sm text-white/90 backdrop-blur transition hover:bg-white/20"
                 >
                   {s}
                 </Link>
