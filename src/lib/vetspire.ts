@@ -178,18 +178,76 @@ export async function listUpcomingClientAppointments(email: string): Promise<Vet
 // Writes (booking orchestration)
 // ---------------------------------------------------------------------------
 
-/** Find an existing Vetspire client by email, or create one. */
+export type ClientContact = {
+  phone?: string | null;
+  address?: {
+    line1?: string | null;
+    line2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    postalCode?: string | null;
+  } | null;
+};
+
+function phoneNumbersInput(contact: ClientContact) {
+  return contact.phone ? [{ value: contact.phone, preferred: true, reminders: true }] : undefined;
+}
+
+function addressesInput(contact: ClientContact) {
+  const a = contact.address;
+  if (!a || !(a.line1 || a.city || a.state || a.postalCode)) return undefined;
+  return [
+    {
+      line1: a.line1 ?? undefined,
+      line2: a.line2 ?? undefined,
+      city: a.city ?? undefined,
+      state: a.state ?? undefined,
+      postalCode: a.postalCode ?? undefined,
+      country: "US",
+      isPrimary: true,
+    },
+  ];
+}
+
+/**
+ * Find an existing Vetspire client by email, or create one — with phone + address
+ * so the chart is complete. For an existing client, fills in phone/address only if
+ * they're currently missing (avoids duplicating entries on repeat bookings).
+ */
 async function findOrCreateClient(input: {
   email: string;
   givenName: string;
   familyName: string;
   locationId: string;
+  contact: ClientContact;
 }): Promise<string> {
-  const found = await gql<{ clients: { id: string }[] }>(
-    `query($f: ClientFilters){ clients(filters: $f, limit: 1){ id } }`,
+  const found = await gql<{
+    clients: { id: string; phoneNumbers: { id: string }[]; addresses: { id: string }[] }[];
+  }>(
+    `query($f: ClientFilters){ clients(filters: $f, limit: 1){ id phoneNumbers { id } addresses { id } } }`,
     { f: { email: input.email } },
   );
-  if (found.clients?.[0]) return found.clients[0].id;
+
+  const existing = found.clients?.[0];
+  if (existing) {
+    // Backfill contact info only where the client has none yet.
+    const patch: Record<string, unknown> = {};
+    if ((existing.phoneNumbers?.length ?? 0) === 0) {
+      const phones = phoneNumbersInput(input.contact);
+      if (phones) patch.phoneNumbers = phones;
+    }
+    if ((existing.addresses?.length ?? 0) === 0) {
+      const addrs = addressesInput(input.contact);
+      if (addrs) patch.addresses = addrs;
+    }
+    if (Object.keys(patch).length > 0) {
+      await gql(`mutation($id: ID!, $i: ClientInput!){ updateClient(id: $id, input: $i){ id } }`, {
+        id: existing.id,
+        i: patch,
+      });
+    }
+    return existing.id;
+  }
 
   const created = await gql<{ createClient: { id: string } }>(
     `mutation($i: ClientInput){ createClient(input: $i){ id } }`,
@@ -199,6 +257,8 @@ async function findOrCreateClient(input: {
         familyName: input.familyName || input.givenName,
         email: input.email,
         primaryLocationId: input.locationId,
+        phoneNumbers: phoneNumbersInput(input.contact),
+        addresses: addressesInput(input.contact),
       },
     },
   );
@@ -242,7 +302,7 @@ export async function bookAppointment(params: {
   durationMin: number;
   providerId?: string | null;
   reason?: string;
-  client: { email: string; givenName: string; familyName: string };
+  client: { email: string; givenName: string; familyName: string; contact: ClientContact };
   pet: { name: string; species: string; breed?: string | null };
 }): Promise<string> {
   const clientId = await findOrCreateClient({ ...params.client, locationId: params.locationId });

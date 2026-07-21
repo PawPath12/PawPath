@@ -62,10 +62,21 @@ export async function createVetspireBooking(formData: FormData) {
   const petId = String(formData.get("petId") ?? "");
   const reason = (formData.get("reason") as string) || "";
 
+  // Client contact details — required so the Vetspire chart is complete.
+  const phone = String(formData.get("phone") ?? "").trim();
+  const addressLine1 = String(formData.get("addressLine1") ?? "").trim();
+  const addressLine2 = String(formData.get("addressLine2") ?? "").trim();
+  const addressCity = String(formData.get("addressCity") ?? "").trim();
+  const addressState = String(formData.get("addressState") ?? "").trim();
+  const addressPostal = String(formData.get("addressPostal") ?? "").trim();
+
   if (!clinicId || !appointmentTypeId || !startISO || !petId) {
     return { error: "Missing booking details. Please pick a service, pet, and time." };
   }
   if (Number.isNaN(new Date(startISO).getTime())) return { error: "Invalid time." };
+  if (!phone || !addressLine1 || !addressCity || !addressState || !addressPostal) {
+    return { error: "Please fill in your phone number and full address so the clinic can set up your chart." };
+  }
 
   const clinic = await requireVetspireClinic(clinicId);
 
@@ -76,6 +87,12 @@ export async function createVetspireBooking(formData: FormData) {
   if (!pet || pet.ownerId !== user.id) return { error: "Please choose one of your pets." };
   if (!dbUser) return { error: "Your account could not be loaded. Please sign in again." };
 
+  // Persist the contact details on the account so they're pre-filled next time.
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { phone, addressLine1, addressLine2: addressLine2 || null, addressCity, addressState, addressPostal },
+  });
+
   try {
     const apptId = await bookAppointment({
       locationId: clinic.vetspireLocationId!,
@@ -84,7 +101,20 @@ export async function createVetspireBooking(formData: FormData) {
       durationMin: Number.isFinite(durationMin) && durationMin > 0 ? durationMin : 30,
       providerId,
       reason: reason || `PawPath booking for ${pet.name}`,
-      client: { email: dbUser.email, ...splitName(dbUser.name) },
+      client: {
+        email: dbUser.email,
+        ...splitName(dbUser.name),
+        contact: {
+          phone,
+          address: {
+            line1: addressLine1,
+            line2: addressLine2 || null,
+            city: addressCity,
+            state: addressState,
+            postalCode: addressPostal,
+          },
+        },
+      },
       pet: { name: pet.name, species: pet.species, breed: pet.breed },
     });
     return { ok: true as const, vetspireAppointmentId: apptId };

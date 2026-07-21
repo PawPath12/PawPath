@@ -25,6 +25,16 @@ model User {
   avatarUrl    String?
   createdAt    DateTime @default(now())
 
+  // Client contact details — collected in PawPath and synced to Vetspire so the
+  // clinic gets a complete chart (see src/lib/vetspire.ts). Optional in general;
+  // required before booking a Vetspire-backed clinic.
+  phone           String?
+  addressLine1    String?
+  addressLine2    String?
+  addressCity     String?
+  addressState    String?
+  addressPostal   String?
+
   ownedClinic   Clinic?        @relation("ClinicOwner")
   vetProfile    Vet?
   pets          Pet[]

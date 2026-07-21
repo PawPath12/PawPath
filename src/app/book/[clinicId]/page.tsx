@@ -36,6 +36,19 @@ export default async function BookPage({
     select: { id: true, name: true, species: true },
   });
 
+  // Saved client contact details, used to pre-fill the Vetspire booking form.
+  const contact = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: {
+      phone: true,
+      addressLine1: true,
+      addressLine2: true,
+      addressCity: true,
+      addressState: true,
+      addressPostal: true,
+    },
+  });
+
   // Vetspire-backed clinics use a different booking flow: availability and
   // appointments come from the clinic's Vetspire location, not our tables.
   // A Vetspire outage (or missing API key) must not crash the whole page, so we
@@ -113,6 +126,14 @@ export default async function BookPage({
               clinicId={clinic.id}
               appointmentTypes={vetspireTypes}
               pets={pets}
+              savedContact={{
+                phone: contact?.phone ?? "",
+                addressLine1: contact?.addressLine1 ?? "",
+                addressLine2: contact?.addressLine2 ?? "",
+                addressCity: contact?.addressCity ?? "",
+                addressState: contact?.addressState ?? "",
+                addressPostal: contact?.addressPostal ?? "",
+              }}
             />
           ) : (
             <BookingWizard

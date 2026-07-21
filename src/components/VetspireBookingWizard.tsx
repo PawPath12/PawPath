@@ -8,6 +8,14 @@ import { SPECIES_EMOJI } from "@/lib/constants";
 type AppointmentType = { id: string; name: string; duration: number | null };
 type Pet = { id: string; name: string; species: string };
 type Slot = { startISO: string; time: string; providerId: string | null };
+type SavedContact = {
+  phone: string;
+  addressLine1: string;
+  addressLine2: string;
+  addressCity: string;
+  addressState: string;
+  addressPostal: string;
+};
 
 /** Next `n` calendar dates as { iso: YYYY-MM-DD, label } for the date strip. */
 function nextDates(n: number): { iso: string; label: string }[] {
@@ -30,16 +38,19 @@ export function VetspireBookingWizard({
   clinicId,
   appointmentTypes,
   pets,
+  savedContact,
 }: {
   clinicId: string;
   appointmentTypes: AppointmentType[];
   pets: Pet[];
+  savedContact: SavedContact;
 }) {
   const router = useRouter();
   const dates = nextDates(14);
 
   const [typeId, setTypeId] = useState(appointmentTypes[0]?.id ?? "");
   const [petId, setPetId] = useState(pets[0]?.id ?? "");
+  const [contact, setContact] = useState<SavedContact>(savedContact);
   const [dateIso, setDateIso] = useState<string | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [slot, setSlot] = useState<Slot | null>(null);
@@ -64,9 +75,17 @@ export function VetspireBookingWizard({
     });
   }
 
+  function setField(key: keyof SavedContact, value: string) {
+    setContact((c) => ({ ...c, [key]: value }));
+  }
+
   function confirm() {
     if (!apptType || !petId || !slot) {
       setError("Please choose a service, pet, and time.");
+      return;
+    }
+    if (!contact.phone.trim() || !contact.addressLine1.trim() || !contact.addressCity.trim() || !contact.addressState.trim() || !contact.addressPostal.trim()) {
+      setError("Please fill in your phone number and full address.");
       return;
     }
     setError(null);
@@ -77,6 +96,12 @@ export function VetspireBookingWizard({
     fd.set("durationMin", String(apptType.duration ?? 30));
     fd.set("providerId", slot.providerId ?? "");
     fd.set("petId", petId);
+    fd.set("phone", contact.phone.trim());
+    fd.set("addressLine1", contact.addressLine1.trim());
+    fd.set("addressLine2", contact.addressLine2.trim());
+    fd.set("addressCity", contact.addressCity.trim());
+    fd.set("addressState", contact.addressState.trim());
+    fd.set("addressPostal", contact.addressPostal.trim());
     startBooking(async () => {
       const res = await createVetspireBooking(fd);
       if (res?.error) {
@@ -135,9 +160,76 @@ export function VetspireBookingWizard({
         </div>
       </section>
 
-      {/* Step 3: Date */}
+      {/* Step 3: Contact & address (synced to the clinic's chart) */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">3 · Day</h2>
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">3 · Your contact &amp; address</h2>
+        <p className="mb-3 text-xs text-slate-500">
+          The clinic needs these to set up your chart. We&apos;ll save them for next time.
+        </p>
+        <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2">
+          <label className="text-sm sm:col-span-2">
+            <span className="mb-1 block text-slate-600">Phone number</span>
+            <input
+              type="tel"
+              value={contact.phone}
+              onChange={(e) => setField("phone", e.target.value)}
+              placeholder="(555) 123-4567"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 outline-none focus:border-brand-500"
+            />
+          </label>
+          <label className="text-sm sm:col-span-2">
+            <span className="mb-1 block text-slate-600">Street address</span>
+            <input
+              value={contact.addressLine1}
+              onChange={(e) => setField("addressLine1", e.target.value)}
+              placeholder="123 Main St"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 outline-none focus:border-brand-500"
+            />
+          </label>
+          <label className="text-sm sm:col-span-2">
+            <span className="mb-1 block text-slate-600">Apt / unit (optional)</span>
+            <input
+              value={contact.addressLine2}
+              onChange={(e) => setField("addressLine2", e.target.value)}
+              placeholder="Apt 4B"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 outline-none focus:border-brand-500"
+            />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-slate-600">City</span>
+            <input
+              value={contact.addressCity}
+              onChange={(e) => setField("addressCity", e.target.value)}
+              placeholder="Brooklyn"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 outline-none focus:border-brand-500"
+            />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="text-sm">
+              <span className="mb-1 block text-slate-600">State</span>
+              <input
+                value={contact.addressState}
+                onChange={(e) => setField("addressState", e.target.value)}
+                placeholder="NY"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 outline-none focus:border-brand-500"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-slate-600">ZIP</span>
+              <input
+                value={contact.addressPostal}
+                onChange={(e) => setField("addressPostal", e.target.value)}
+                placeholder="11235"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 outline-none focus:border-brand-500"
+              />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      {/* Step 4: Date */}
+      <section>
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">4 · Day</h2>
         <div className="flex flex-wrap gap-2">
           {dates.map((d) => (
             <button
@@ -155,7 +247,7 @@ export function VetspireBookingWizard({
       {/* Step 4: Time */}
       {dateIso && (
         <section>
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">4 · Pick a time</h2>
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">5 · Pick a time</h2>
           {loadingSlots ? (
             <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500">Loading available times…</p>
           ) : slots.length === 0 ? (
