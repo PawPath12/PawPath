@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { requireClient } from "@/lib/rbac";
 import { prisma } from "@/lib/db";
 import { BookingWizard } from "@/components/BookingWizard";
+import { VetspireBookingWizard } from "@/components/VetspireBookingWizard";
+import { getVetspireAppointmentTypes } from "@/lib/actions/vetspire-booking";
 import type { Window } from "@/lib/slots";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +35,17 @@ export default async function BookPage({
     orderBy: { createdAt: "asc" },
     select: { id: true, name: true, species: true },
   });
+
+  // Vetspire-backed clinics use a different booking flow: availability and
+  // appointments come from the clinic's Vetspire location, not our tables.
+  const isVetspire = clinic.bookingProvider === "VETSPIRE" && Boolean(clinic.vetspireLocationId);
+  const vetspireTypes = isVetspire
+    ? (await getVetspireAppointmentTypes(clinic.id)).map((t) => ({
+        id: t.id,
+        name: t.name,
+        duration: t.duration,
+      }))
+    : [];
 
   const busy = await prisma.appointment.findMany({
     where: {
@@ -79,20 +92,28 @@ export default async function BookPage({
         </div>
       ) : (
         <div className="mt-6">
-          <BookingWizard
-            clinicId={clinic.id}
-            services={clinic.services.map((s) => ({
-              id: s.id,
-              name: s.name,
-              priceCents: s.priceCents,
-              durationMin: s.durationMin,
-            }))}
-            vets={clinic.vets.map((v) => ({ id: v.id, name: v.name, specialties: v.specialties }))}
-            pets={pets}
-            availabilityByVet={availabilityByVet}
-            busyByVet={busyByVet}
-            preselectServiceId={serviceId ?? null}
-          />
+          {isVetspire ? (
+            <VetspireBookingWizard
+              clinicId={clinic.id}
+              appointmentTypes={vetspireTypes}
+              pets={pets}
+            />
+          ) : (
+            <BookingWizard
+              clinicId={clinic.id}
+              services={clinic.services.map((s) => ({
+                id: s.id,
+                name: s.name,
+                priceCents: s.priceCents,
+                durationMin: s.durationMin,
+              }))}
+              vets={clinic.vets.map((v) => ({ id: v.id, name: v.name, specialties: v.specialties }))}
+              pets={pets}
+              availabilityByVet={availabilityByVet}
+              busyByVet={busyByVet}
+              preselectServiceId={serviceId ?? null}
+            />
+          )}
         </div>
       )}
     </div>

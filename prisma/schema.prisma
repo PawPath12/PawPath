@@ -46,6 +46,12 @@ model Clinic {
   reviewCount Int      @default(0)
   createdAt   DateTime @default(now())
 
+  // Booking backend: "PAWPATH" (built-in scheduling) or "VETSPIRE" (external PMS).
+  // When VETSPIRE, availability + appointments come from the clinic's Vetspire
+  // location (see src/lib/vetspire.ts); the API key is read from VETSPIRE_API_KEY.
+  bookingProvider    String  @default("PAWPATH")
+  vetspireLocationId String?
+
   ownerUserId String @unique
   owner       User   @relation("ClinicOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
 
