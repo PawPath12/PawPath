@@ -51,6 +51,9 @@ export function VetspireBookingWizard({
   const [typeId, setTypeId] = useState(appointmentTypes[0]?.id ?? "");
   const [petId, setPetId] = useState(pets[0]?.id ?? "");
   const [contact, setContact] = useState<SavedContact>(savedContact);
+  const [previousVet, setPreviousVet] = useState("");
+  const [requestRecords, setRequestRecords] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
   const [dateIso, setDateIso] = useState<string | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [slot, setSlot] = useState<Slot | null>(null);
@@ -102,6 +105,9 @@ export function VetspireBookingWizard({
     fd.set("addressCity", contact.addressCity.trim());
     fd.set("addressState", contact.addressState.trim());
     fd.set("addressPostal", contact.addressPostal.trim());
+    if (previousVet.trim()) fd.set("previousVet", previousVet.trim());
+    if (requestRecords) fd.set("requestRecords", "on");
+    for (const f of files) fd.append("records", f);
     startBooking(async () => {
       const res = await createVetspireBooking(fd);
       if (res?.error) {
@@ -224,6 +230,48 @@ export function VetspireBookingWizard({
               />
             </label>
           </div>
+        </div>
+      </section>
+
+      {/* Optional: new-patient history — previous vet + records */}
+      <section>
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">
+          New patient? <span className="text-slate-300">(optional)</span>
+        </h2>
+        <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+          <label className="block text-sm">
+            <span className="mb-1 block text-slate-600">Previous vet clinic(s)</span>
+            <input
+              value={previousVet}
+              onChange={(e) => setPreviousVet(e.target.value)}
+              placeholder="e.g. Ocean Ave Animal Hospital, Brooklyn"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 outline-none focus:border-brand-500"
+            />
+          </label>
+          <label className="flex items-start gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              checked={requestRecords}
+              onChange={(e) => setRequestRecords(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>Please request my pet&apos;s records from my previous vet.</span>
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1 block text-slate-600">Upload records (PDF or photo)</span>
+            <input
+              type="file"
+              multiple
+              accept=".pdf,image/*"
+              onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+              className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100"
+            />
+            {files.length > 0 && (
+              <span className="mt-1 block text-xs text-slate-500">
+                {files.length} file{files.length > 1 ? "s" : ""} selected — sent straight to your pet&apos;s chart.
+              </span>
+            )}
+          </label>
         </div>
       </section>
 

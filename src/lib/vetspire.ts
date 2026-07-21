@@ -293,7 +293,8 @@ async function findOrCreatePatient(
 
 /**
  * Full online-booking orchestration: ensure the client + pet exist in Vetspire,
- * then create the appointment. Returns the new Vetspire appointment id.
+ * then create the appointment. Returns the appointment id AND the patient id (the
+ * latter so the caller can attach uploaded records to the chart).
  */
 export async function bookAppointment(params: {
   locationId: string;
@@ -302,9 +303,10 @@ export async function bookAppointment(params: {
   durationMin: number;
   providerId?: string | null;
   reason?: string;
+  note?: string;
   client: { email: string; givenName: string; familyName: string; contact: ClientContact };
   pet: { name: string; species: string; breed?: string | null };
-}): Promise<string> {
+}): Promise<{ appointmentId: string; patientId: string }> {
   const clientId = await findOrCreateClient({ ...params.client, locationId: params.locationId });
   const patientId = await findOrCreatePatient(clientId, params.pet);
 
@@ -319,11 +321,59 @@ export async function bookAppointment(params: {
         start: params.startISO,
         duration: params.durationMin,
         reason: params.reason ?? "Booked online via PawPath",
+        note: params.note || undefined,
         status: "PENDING",
         bookedOnline: true,
         sendConfirmation: true,
       },
     },
   );
-  return created.createAppointment.id;
+  return { appointmentId: created.createAppointment.id, patientId };
+}
+
+/**
+ * Attach a file to a patient's Vetspire chart. Uses Absinthe's multipart upload
+ * convention (the Upload variable references a form-field name). Best-effort:
+ * returns {ok:false} on failure rather than throwing, so a bad upload never
+ * blocks a completed booking.
+ */
+export async function uploadPatientDocument(
+  patientId: string,
+  file: { filename: string; mimeType: string; bytes: Uint8Array },
+  opts?: { name?: string; locationId?: string; category?: string },
+): Promise<{ ok: boolean; id?: string; error?: string }> {
+  const key = process.env.VETSPIRE_API_KEY;
+  if (!key) return { ok: false, error: "VETSPIRE_API_KEY is not set" };
+
+  const mutation = `mutation($doc: Upload!, $pid: ID!, $name: String!, $loc: ID, $cat: String){
+    uploadPatientDocument(document: $doc, patientId: $pid, name: $name, locationId: $loc, category: $cat){ id }
+  }`;
+
+  const form = new FormData();
+  form.append(
+    "variables",
+    JSON.stringify({
+      doc: "file0", // Absinthe: the Upload variable's value is the form-field name
+      pid: patientId,
+      name: opts?.name ?? file.filename,
+      loc: opts?.locationId ?? null,
+      cat: opts?.category ?? "Medical Records",
+    }),
+  );
+  form.append("query", mutation);
+  // Blob copy keeps a clean ArrayBuffer backing regardless of the source view.
+  form.append("file0", new Blob([file.bytes.slice()], { type: file.mimeType }), file.filename);
+
+  try {
+    const res = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: { Authorization: key },
+      body: form,
+    });
+    const json = (await res.json()) as { data?: { uploadPatientDocument?: { id: string } }; errors?: unknown };
+    if (json.errors) return { ok: false, error: JSON.stringify(json.errors) };
+    return { ok: true, id: json.data?.uploadPatientDocument?.id };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
 }

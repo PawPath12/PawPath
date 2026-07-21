@@ -6,9 +6,14 @@ import {
   listOnlineAppointmentTypes,
   availableTimes,
   bookAppointment,
+  uploadPatientDocument,
   type VetspireAppointmentType,
   type VetspireSlot,
 } from "@/lib/vetspire";
+
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB per file
+const MAX_FILES = 5;
+const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/heic", "image/webp"];
 
 /** Split a single display name into given / family for Vetspire. */
 function splitName(name: string): { givenName: string; familyName: string } {
@@ -62,6 +67,11 @@ export async function createVetspireBooking(formData: FormData) {
   const petId = String(formData.get("petId") ?? "");
   const reason = (formData.get("reason") as string) || "";
 
+  // New-patient history: previous vet + records handling.
+  const previousVet = String(formData.get("previousVet") ?? "").trim();
+  const requestRecords = String(formData.get("requestRecords") ?? "") === "on";
+  const records = formData.getAll("records").filter((f): f is File => f instanceof File && f.size > 0);
+
   // Client contact details — required so the Vetspire chart is complete.
   const phone = String(formData.get("phone") ?? "").trim();
   const addressLine1 = String(formData.get("addressLine1") ?? "").trim();
@@ -93,14 +103,22 @@ export async function createVetspireBooking(formData: FormData) {
     data: { phone, addressLine1, addressLine2: addressLine2 || null, addressCity, addressState, addressPostal },
   });
 
+  // A note the receptionist sees on the appointment (previous vet + records ask).
+  const noteParts: string[] = [];
+  if (previousVet) noteParts.push(`Previous vet: ${previousVet}.`);
+  if (requestRecords) noteParts.push("Client requests records be obtained from their previous vet.");
+  if (records.length > 0) noteParts.push(`${records.length} record file(s) uploaded to the chart.`);
+  const note = noteParts.join(" ");
+
   try {
-    const apptId = await bookAppointment({
+    const { appointmentId, patientId } = await bookAppointment({
       locationId: clinic.vetspireLocationId!,
       appointmentTypeId,
       startISO,
       durationMin: Number.isFinite(durationMin) && durationMin > 0 ? durationMin : 30,
       providerId,
       reason: reason || `PawPath booking for ${pet.name}`,
+      note,
       client: {
         email: dbUser.email,
         ...splitName(dbUser.name),
@@ -117,7 +135,29 @@ export async function createVetspireBooking(formData: FormData) {
       },
       pet: { name: pet.name, species: pet.species, breed: pet.breed },
     });
-    return { ok: true as const, vetspireAppointmentId: apptId };
+
+    // Upload records to the chart — best-effort, never blocks the booking.
+    let uploaded = 0;
+    let uploadFailed = 0;
+    for (const file of records.slice(0, MAX_FILES)) {
+      if (file.size > MAX_FILE_BYTES || (file.type && !ALLOWED_TYPES.includes(file.type))) {
+        uploadFailed++;
+        continue;
+      }
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const res = await uploadPatientDocument(
+        patientId,
+        { filename: file.name, mimeType: file.type || "application/octet-stream", bytes },
+        { locationId: clinic.vetspireLocationId!, name: `${pet.name} — ${file.name}`, category: "Medical Records" },
+      );
+      if (res.ok) uploaded++;
+      else {
+        uploadFailed++;
+        console.error(`Record upload failed (${file.name}):`, res.error);
+      }
+    }
+
+    return { ok: true as const, vetspireAppointmentId: appointmentId, uploaded, uploadFailed };
   } catch (e) {
     return { error: `Couldn't complete the booking: ${(e as Error).message}` };
   }
