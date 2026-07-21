@@ -38,14 +38,23 @@ export default async function BookPage({
 
   // Vetspire-backed clinics use a different booking flow: availability and
   // appointments come from the clinic's Vetspire location, not our tables.
+  // A Vetspire outage (or missing API key) must not crash the whole page, so we
+  // degrade to a friendly notice instead of throwing.
   const isVetspire = clinic.bookingProvider === "VETSPIRE" && Boolean(clinic.vetspireLocationId);
-  const vetspireTypes = isVetspire
-    ? (await getVetspireAppointmentTypes(clinic.id)).map((t) => ({
+  let vetspireTypes: { id: string; name: string; duration: number | null }[] = [];
+  let vetspireUnavailable = false;
+  if (isVetspire) {
+    try {
+      vetspireTypes = (await getVetspireAppointmentTypes(clinic.id)).map((t) => ({
         id: t.id,
         name: t.name,
         duration: t.duration,
-      }))
-    : [];
+      }));
+    } catch (err) {
+      console.error(`Vetspire appointment types fetch failed for clinic ${clinic.id}:`, err);
+      vetspireUnavailable = true;
+    }
+  }
 
   const busy = await prisma.appointment.findMany({
     where: {
@@ -92,7 +101,14 @@ export default async function BookPage({
         </div>
       ) : (
         <div className="mt-6">
-          {isVetspire ? (
+          {isVetspire && vetspireUnavailable ? (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
+              <p className="text-lg font-medium text-amber-800">Online booking is temporarily unavailable</p>
+              <p className="mt-1 text-sm text-amber-700">
+                We couldn&apos;t reach {clinic.name}&apos;s scheduling system just now. Please try again in a few minutes.
+              </p>
+            </div>
+          ) : isVetspire ? (
             <VetspireBookingWizard
               clinicId={clinic.id}
               appointmentTypes={vetspireTypes}
