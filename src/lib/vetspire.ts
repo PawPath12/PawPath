@@ -134,6 +134,46 @@ export async function availableTimes(
   }));
 }
 
+export type VetspireClientAppointment = {
+  id: string;
+  startISO: string;
+  status: string;
+  petName: string | null;
+  locationId: string | null;
+};
+
+/**
+ * Upcoming appointments for a person (matched by email) across the org's Vetspire
+ * locations. Returns [] if they have no Vetspire client record. Used to surface
+ * Vetspire-booked visits back on the PawPath "My Appointments" page.
+ */
+export async function listUpcomingClientAppointments(email: string): Promise<VetspireClientAppointment[]> {
+  const found = await gql<{ clients: { id: string }[] }>(
+    `query($f: ClientFilters){ clients(filters: $f, limit: 1){ id } }`,
+    { f: { email } },
+  );
+  const clientId = found.clients?.[0]?.id;
+  if (!clientId) return [];
+
+  const data = await gql<{
+    appointments: { id: string; start: string; status: string; patient: { name: string } | null; location: { id: string } | null }[];
+  }>(
+    `query($cid: ID!, $start: DateTime!){
+       appointments(clientId: $cid, start: $start, limit: 50){
+         id start status patient { name } location { id }
+       }
+     }`,
+    { cid: clientId, start: new Date().toISOString() },
+  );
+  return (data.appointments ?? []).map((a) => ({
+    id: a.id,
+    startISO: a.start,
+    status: a.status,
+    petName: a.patient?.name ?? null,
+    locationId: a.location?.id ?? null,
+  }));
+}
+
 // ---------------------------------------------------------------------------
 // Writes (booking orchestration)
 // ---------------------------------------------------------------------------
