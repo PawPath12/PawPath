@@ -102,10 +102,12 @@ export default async function ClinicProfile({
                 <li key={s.id} className="flex items-center justify-between gap-4 py-3">
                   <div>
                     <p className="font-medium text-slate-800">{s.name}</p>
-                    <p className="text-sm text-slate-500">{s.description} · {s.durationMin} min</p>
+                    <p className="text-sm text-slate-500">{s.description ? `${s.description} · ` : ""}{s.durationMin} min</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="font-semibold text-slate-900">{formatPrice(s.priceCents)}</span>
+                    <span className="font-semibold text-slate-900">
+                      {s.priceCents > 0 ? formatPrice(s.priceCents) : "Contact for pricing"}
+                    </span>
                     <Link
                       href={`/book/${clinic.id}?serviceId=${s.id}`}
                       className="rounded-lg bg-brand-50 px-3 py-1.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-100"
