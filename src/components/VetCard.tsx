@@ -25,9 +25,10 @@ function distinctSpecialties(vets: { specialties: string }[]): string[] {
 }
 
 export function VetCard({ clinic }: { clinic: ClinicCardData }) {
-  const fromPrice = clinic.services.length
-    ? Math.min(...clinic.services.map((s) => s.priceCents))
-    : null;
+  // Only consider services that actually have a price ("Contact for pricing"
+  // services are stored as 0 and shouldn't produce a misleading "from $0".
+  const pricedServices = clinic.services.map((s) => s.priceCents).filter((c) => c > 0);
+  const fromPrice = pricedServices.length ? Math.min(...pricedServices) : null;
   const specialties = distinctSpecialties(clinic.vets);
   const monogram = clinic.name.replace(/^(The |A )/, "").charAt(0).toUpperCase();
 
