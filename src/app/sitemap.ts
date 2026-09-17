@@ -10,6 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${BASE_URL}/vets`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/pricing`, changeFrequency: "monthly", priority: 0.7 },
   ];
 
   // Each public clinic profile is an indexable content page. If the database is

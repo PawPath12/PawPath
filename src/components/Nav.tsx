@@ -13,6 +13,7 @@ function NavItems({ role, stacked }: { role?: string; stacked?: boolean }) {
 
       {!role && (
         <>
+          <Link href="/pricing" className={linkClass}>Pricing</Link>
           <Link
             href="/login?as=owner"
             className={stacked ? linkClass : "rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-ink"}
