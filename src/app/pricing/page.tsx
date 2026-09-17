@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Pricing — PawPath for Clinics",
   description:
-    "Simple monthly plans for veterinary clinics on PawPath. List your clinic, take bookings online, and get discovered — starting with 2 months free. Online booking included in every plan.",
+    "Simple monthly plans for veterinary clinics on PawPath. List your clinic to get discovered, or add online booking — starting with 2 months free.",
 };
 
 type Tier = {
@@ -12,6 +12,7 @@ type Tier = {
   icon: string;
   tagline: string;
   price: number;
+  perVet?: number; // $/month per additional vet, if this plan includes booking
   cta: string;
   featured?: boolean;
   featsLabel: string;
@@ -20,34 +21,32 @@ type Tier = {
 
 const TIERS: Tier[] = [
   {
-    name: "Host",
+    name: "Listed",
     icon: "🐾",
-    tagline: "Just get your clinic on PawPath",
+    tagline: "Just get found on PawPath",
     price: 99,
     cta: "Start free trial",
     featsLabel: "Includes",
     feats: [
       { text: "Public clinic profile", on: true },
-      { text: "Show up in local search", on: true },
-      { text: "Online booking built in", on: true },
-      { text: "1 veterinarian", on: true },
-      { text: "Up to 3 services", on: true },
-      { text: "Client messaging", on: false },
-      { text: "Reviews & ratings", on: false },
+      { text: "Appear in local search", on: true },
+      { text: "Your phone & email shown — owners contact you directly", on: true },
       { text: "Email support", on: true },
+      { text: "Online booking through PawPath", on: false },
     ],
   },
   {
-    name: "Grow",
+    name: "Booking",
     icon: "⭐",
-    tagline: "Get & manage more clients",
+    tagline: "Take appointments online",
     price: 179,
+    perVet: 25,
     cta: "Start free trial",
     featured: true,
-    featsLabel: "Everything in Host, plus",
+    featsLabel: "Everything in Listed, plus",
     feats: [
-      { text: "Up to 5 veterinarians", on: true },
-      { text: "Unlimited services", on: true },
+      { text: "Online booking through PawPath", on: true },
+      { text: "Services & pricing catalog", on: true },
       { text: "Client messaging", on: true },
       { text: "Reviews & ratings", on: true },
       { text: "Booking analytics", on: true },
@@ -60,10 +59,10 @@ const TIERS: Tier[] = [
     icon: "👑",
     tagline: "Full-scale & multi-doctor practices",
     price: 229,
+    perVet: 25,
     cta: "Start free trial",
-    featsLabel: "Everything in Grow, plus",
+    featsLabel: "Everything in Booking, plus",
     feats: [
-      { text: "Unlimited veterinarians", on: true },
       { text: "Featured — top of search results", on: true },
       { text: "Practice-management integration (Vetspire)", on: true },
       { text: "Multiple locations", on: true },
@@ -79,12 +78,12 @@ const FAQS = [
     a: "Yes. You won't be charged for the first two months. We ask for a card at signup so your service continues seamlessly — cancel anytime before the trial ends and pay nothing.",
   },
   {
-    q: "Why do you need my card upfront?",
-    a: "So there's no gap in your listing when the trial ends. Nothing is charged until day 61, and we'll remind you before that first payment.",
+    q: "How does per-vet pricing work?",
+    a: "The Listed plan is a flat monthly price. On plans with online booking, your first veterinarian is included and each additional vet who takes bookings is just $25/month more.",
   },
   {
-    q: "Can I change plans later?",
-    a: "Anytime. Upgrade as your practice grows or downgrade if you need to — the change takes effect on your next billing date.",
+    q: "What's the difference between Listed and Booking?",
+    a: "Listed puts your clinic in our directory with your contact details so pet owners reach out to you directly. Booking adds a real “book online” button, a services menu, messaging and more.",
   },
   {
     q: "Can I cancel whenever I want?",
@@ -106,8 +105,8 @@ export default function PricingPage() {
             Pricing that pays for itself
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-white/80">
-            List your clinic, get discovered by local pet owners, and take bookings online — for a
-            fraction of what the big platforms charge. Online booking is included in every plan.
+            Get your clinic found by local pet owners — then add online booking whenever you&apos;re
+            ready. Simple monthly plans, and your first two months are free.
           </p>
           <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-brand-400/40 bg-brand-400/15 px-5 py-2.5 text-sm font-medium text-brand-50">
             🐾 Every plan starts with 2 months free — cancel anytime before you&apos;re charged
@@ -144,6 +143,13 @@ export default function PricingPage() {
                 <span className="text-slate-500">/month</span>
               </div>
               <p className="mt-3 text-sm font-medium text-brand-700">First 2 months free</p>
+              {t.perVet ? (
+                <p className="mt-1 text-xs text-slate-500">
+                  First vet included · +${t.perVet}/mo per additional vet
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-slate-500">Flat rate — list as many vets as you like</p>
+              )}
 
               <Link
                 href="/register"
@@ -200,9 +206,8 @@ export default function PricingPage() {
             </h2>
             <p className="mt-2 text-slate-600">
               Other platforms start around <strong>$249/month</strong> and charge roughly{" "}
-              <strong>$200 more</strong> just to add online booking. On PawPath, taking appointments
-              online is built into every plan — even your top tier costs less than their starting
-              price.
+              <strong>$200 more</strong> just to add online booking. On PawPath, booking is built into
+              every Booking and Pro plan — even your top tier costs less than their starting price.
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white px-7 py-5 text-center">
@@ -233,7 +238,7 @@ export default function PricingPage() {
         <div className="mb-20 mt-16 overflow-hidden rounded-3xl bg-gradient-to-br from-ink to-brand-900 p-12 text-center text-white">
           <h2 className="font-display text-3xl font-semibold">Ready to be found?</h2>
           <p className="mx-auto mt-3 max-w-md text-white/80">
-            Join the clinics helping pet owners book care in seconds. Two months free — no risk.
+            Join the clinics helping pet owners find care in seconds. Two months free — no risk.
           </p>
           <Link
             href="/register"
