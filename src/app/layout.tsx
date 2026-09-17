@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   title: "PawPath — Find & book trusted veterinarians",
   description:
     "PawPath connects pet owners with veterinarians and clinics. Search, compare, and book appointments online.",
+  verification: {
+    google: "M0gpQe_XTDA2SkH4kts_k5UwsqmCnBF054Fzzjpxujw",
+  },
 };
 
 export default function RootLayout({
