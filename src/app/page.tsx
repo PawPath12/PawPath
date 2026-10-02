@@ -14,6 +14,7 @@ const SPECIALTIES = [
   "Ophthalmology",
   "Internal Medicine",
   "Behavior",
+  "Holistic Medicine",
   "Emergency & Critical Care",
 ];
 
