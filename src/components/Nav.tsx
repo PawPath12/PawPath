@@ -10,6 +10,7 @@ function NavItems({ role, stacked }: { role?: string; stacked?: boolean }) {
   return (
     <>
       <Link href="/vets" className={linkClass}>Find Vets</Link>
+      <Link href="/giveaway" className={linkClass}>Giveaway</Link>
 
       {!role && (
         <>
