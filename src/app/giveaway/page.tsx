@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
+import { GiveawayForm } from "@/components/GiveawayForm";
 
 export const metadata: Metadata = {
   title: "Giveaway — PawPath",
   description:
-    "Enter the PawPath giveaway. Scan, enter, and you could win — from the team helping pet owners find and book trusted veterinary care.",
+    "Enter the PawPath giveaway. Enter in seconds — from the team helping pet owners find and book trusted veterinary care.",
 };
-
-// Google Form embed (from the form's Send → <> embed code).
-const FORM_SRC =
-  "https://docs.google.com/forms/d/e/1FAIpQLSfmXnqiLeVjIhFlVqJdJ7AmEF8kozTx1HV-QvHgGS_CSiAtXw/viewform?embedded=true";
 
 export default function GiveawayPage() {
   return (
@@ -24,36 +21,15 @@ export default function GiveawayPage() {
             Enter the PawPath giveaway
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-white/80">
-            Fill out the quick form below to enter. Winners will be contacted by email —
+            Enter in a few seconds below. Winners will be contacted by email —
             good luck from the whole PawPath team!
           </p>
         </div>
       </section>
 
-      {/* Embedded Google Form */}
-      <section className="mx-auto max-w-3xl px-4 py-10">
-        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-2 shadow-sm sm:p-4">
-          <iframe
-            src={FORM_SRC}
-            title="PawPath Giveaway entry form"
-            className="mx-auto block w-full"
-            style={{ height: 1800, border: 0, maxWidth: 640 }}
-            loading="lazy"
-          >
-            Loading…
-          </iframe>
-        </div>
-        <p className="mt-4 text-center text-xs text-slate-400">
-          Having trouble with the form?{" "}
-          <a
-            href="https://docs.google.com/forms/d/e/1FAIpQLSfmXnqiLeVjIhFlVqJdJ7AmEF8kozTx1HV-QvHgGS_CSiAtXw/viewform"
-            className="font-medium text-brand-700 hover:underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Open it in a new tab →
-          </a>
-        </p>
+      {/* Branded entry form (posts into the Google Form behind the scenes) */}
+      <section className="mx-auto max-w-2xl px-4 py-10">
+        <GiveawayForm />
       </section>
     </div>
   );
