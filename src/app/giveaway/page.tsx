@@ -18,11 +18,11 @@ export default function GiveawayPage() {
             🐾 Giveaway
           </span>
           <h1 className="mt-6 font-display text-4xl font-bold leading-tight text-balance sm:text-5xl">
-            Enter the PawPath giveaway
+            Treat Yourself Giveaway
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-white/80">
-            Enter in a few seconds below. Winners will be contacted by email —
-            good luck from the whole PawPath team!
+            Because you deserve a treat, too. 🐾 Enter below — winners will be
+            contacted by email.
           </p>
         </div>
       </section>
