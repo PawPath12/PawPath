@@ -24,6 +24,9 @@ export default function GiveawayPage() {
             Because you deserve a treat, too. 🐾 Enter below — winners will be
             contacted by email.
           </p>
+          <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-300/10 px-6 py-3 text-base font-semibold text-amber-200">
+            🎁 Grand prize: a <span className="font-display text-xl">$500</span> self-care experience
+          </div>
         </div>
       </section>
 
