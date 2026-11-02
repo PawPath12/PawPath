@@ -64,7 +64,7 @@ const TIERS: Tier[] = [
     featsLabel: "Everything in Booking, plus",
     feats: [
       { text: "Featured — top of search results", on: true },
-      { text: "Practice-management integration (Vetspire)", on: true },
+      { text: "Practice-management integration", on: true },
       { text: "Multiple locations", on: true },
       { text: "Monthly performance reports", on: true },
       { text: "Priority support + onboarding call", on: true },
