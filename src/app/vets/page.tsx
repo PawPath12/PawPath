@@ -25,29 +25,7 @@ export default async function VetsPage({ searchParams }: { searchParams: SearchP
   const minRating = FEATURE_REVIEWS ? Number(sp.minRating ?? 0) || 0 : 0;
   const sort = sp.sort ?? (FEATURE_REVIEWS ? "rating" : "name");
 
-  const where: Prisma.ClinicWhereInput = {};
-  if (q) where.name = { contains: q };
-  if (city) where.city = city;
-  if (service) where.services = { some: { name: service } };
-  if (specialty) where.vets = { some: { specialties: { contains: specialty, mode: "insensitive" } } };
-  if (minRating > 0) where.avgRating = { gte: minRating };
-
-  const orderBy: Prisma.ClinicOrderByWithRelationInput =
-    sort === "name"
-      ? { name: "asc" }
-      : sort === "reviews"
-        ? { reviewCount: "desc" }
-        : { avgRating: "desc" };
-
-  const [clinics, cities, services, allVetSpecialties] = await Promise.all([
-    prisma.clinic.findMany({
-      where,
-      orderBy,
-      include: {
-        vets: { select: { name: true, specialties: true } },
-        services: { select: { name: true, priceCents: true }, orderBy: { priceCents: "asc" } },
-      },
-    }),
+  const [cities, allServices, allVetSpecialties] = await Promise.all([
     prisma.clinic.findMany({ select: { city: true }, distinct: ["city"], orderBy: { city: "asc" } }),
     prisma.service.findMany({ select: { name: true }, distinct: ["name"], orderBy: { name: "asc" } }),
     prisma.vet.findMany({ select: { specialties: true } }),
@@ -61,6 +39,40 @@ export default async function VetsPage({ searchParams }: { searchParams: SearchP
       ...allVetSpecialties.flatMap((v) => v.specialties.split(",").map((s) => s.trim()).filter(Boolean)),
     ]),
   ].sort();
+
+  // Services named like a specialty (e.g. "Home euthanasia" vs "At-Home Euthanasia") are
+  // left out of the Services dropdown; picking the specialty also finds clinics offering them.
+  const services = allServices.filter((s) => !specialties.some((sp) => overlaps(sp, s.name)));
+  const specialtyServices = specialty
+    ? allServices.filter((s) => overlaps(specialty, s.name)).map((s) => s.name)
+    : [];
+
+  const where: Prisma.ClinicWhereInput = {};
+  if (q) where.name = { contains: q };
+  if (city) where.city = city;
+  if (service) where.services = { some: { name: service } };
+  if (specialty)
+    where.OR = [
+      { vets: { some: { specialties: { contains: specialty, mode: "insensitive" } } } },
+      { services: { some: { name: { in: specialtyServices } } } },
+    ];
+  if (minRating > 0) where.avgRating = { gte: minRating };
+
+  const orderBy: Prisma.ClinicOrderByWithRelationInput =
+    sort === "name"
+      ? { name: "asc" }
+      : sort === "reviews"
+        ? { reviewCount: "desc" }
+        : { avgRating: "desc" };
+
+  const clinics = await prisma.clinic.findMany({
+    where,
+    orderBy,
+    include: {
+      vets: { select: { name: true, specialties: true } },
+      services: { select: { name: true, priceCents: true }, orderBy: { priceCents: "asc" } },
+    },
+  });
 
   const select =
     "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-100";
@@ -136,4 +148,14 @@ export default async function VetsPage({ searchParams }: { searchParams: SearchP
       )}
     </div>
   );
+}
+
+function normalize(s: string): string {
+  return s.toLowerCase().replace(/[^a-z]+/g, " ").trim();
+}
+
+function overlaps(a: string, b: string): boolean {
+  const x = normalize(a);
+  const y = normalize(b);
+  return !!x && !!y && (x.includes(y) || y.includes(x));
 }

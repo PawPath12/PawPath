@@ -17,7 +17,6 @@ const SPECIALTIES = [
   "Holistic Medicine",
   "Emergency & Critical Care",
   "Hospice & End-of-Life Care",
-  "At-Home Euthanasia",
 ];
 
 export default async function Home() {
