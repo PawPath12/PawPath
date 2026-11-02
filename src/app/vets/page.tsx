@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { VetCard } from "@/components/VetCard";
 import { FEATURE_REVIEWS } from "@/lib/features";
+import { SPECIALTIES } from "@/lib/constants";
 import type { Prisma } from "@/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export default async function VetsPage({ searchParams }: { searchParams: SearchP
   if (q) where.name = { contains: q };
   if (city) where.city = city;
   if (service) where.services = { some: { name: service } };
-  if (specialty) where.vets = { some: { specialties: { contains: specialty } } };
+  if (specialty) where.vets = { some: { specialties: { contains: specialty, mode: "insensitive" } } };
   if (minRating > 0) where.avgRating = { gte: minRating };
 
   const orderBy: Prisma.ClinicOrderByWithRelationInput =
@@ -52,11 +53,13 @@ export default async function VetsPage({ searchParams }: { searchParams: SearchP
     prisma.vet.findMany({ select: { specialties: true } }),
   ]);
 
-  // Distinct specialty tokens across all vets (specialties are comma-separated).
+  // The standard list plus any custom specialty tokens vets have typed in
+  // (specialties are comma-separated), so every option shows even before a vet uses it.
   const specialties = [
-    ...new Set(
-      allVetSpecialties.flatMap((v) => v.specialties.split(",").map((s) => s.trim()).filter(Boolean)),
-    ),
+    ...new Set([
+      ...SPECIALTIES,
+      ...allVetSpecialties.flatMap((v) => v.specialties.split(",").map((s) => s.trim()).filter(Boolean)),
+    ]),
   ].sort();
 
   const select =

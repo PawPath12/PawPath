@@ -54,3 +54,26 @@ export const DAYS = [
   "Friday",
   "Saturday",
 ] as const;
+
+// Specialties a practice can pick for each vet. Stored on Vet.specialties as a
+// comma-separated string; practices can still type extra ones under "Other".
+export const SPECIALTIES = [
+  "General Practice",
+  "Preventive Care",
+  "Internal Medicine",
+  "Surgery",
+  "Orthopedics",
+  "Dentistry",
+  "Dermatology",
+  "Cardiology",
+  "Oncology",
+  "Neurology",
+  "Ophthalmology",
+  "Emergency & Critical Care",
+  "Behavior",
+  "Nutrition",
+  "Feline Medicine",
+  "Holistic Medicine",
+  "Hospice & End-of-Life Care",
+  "At-Home Euthanasia",
+] as const;

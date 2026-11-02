@@ -7,6 +7,7 @@ import {
   deleteStaff,
   type ActionState,
 } from "@/lib/actions/clinic";
+import { SPECIALTIES } from "@/lib/constants";
 
 export type StaffDTO = {
   id: string;
@@ -18,6 +19,47 @@ export type StaffDTO = {
 const input =
   "rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100";
 
+function splitSpecialties(value: string): string[] {
+  return value.split(",").map((x) => x.trim()).filter(Boolean);
+}
+
+function SpecialtiesPicker({ initial }: { initial: string }) {
+  const standard = new Set<string>(SPECIALTIES);
+  const existing = splitSpecialties(initial);
+  const [picked, setPicked] = useState<string[]>(existing.filter((x) => standard.has(x)));
+  const [other, setOther] = useState(existing.filter((x) => !standard.has(x)).join(", "));
+  const value = [...SPECIALTIES.filter((x) => picked.includes(x)), ...splitSpecialties(other)].join(", ");
+
+  return (
+    <fieldset className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+      <legend className="mb-1">Specialties</legend>
+      <input type="hidden" name="specialties" value={value} />
+      <div className="grid gap-x-4 gap-y-1.5 sm:grid-cols-2">
+        {SPECIALTIES.map((sp) => (
+          <label key={sp} className="flex items-center gap-2 font-normal text-slate-600">
+            <input
+              type="checkbox"
+              checked={picked.includes(sp)}
+              onChange={(e) =>
+                setPicked((prev) => (e.target.checked ? [...prev, sp] : prev.filter((x) => x !== sp)))
+              }
+              className="h-4 w-4 rounded border-slate-300 accent-brand-600"
+            />
+            {sp}
+          </label>
+        ))}
+      </div>
+      <input
+        value={other}
+        onChange={(e) => setOther(e.target.value)}
+        className={`${input} mt-1 font-normal`}
+        placeholder="Other specialties, comma-separated"
+        aria-label="Other specialties"
+      />
+    </fieldset>
+  );
+}
+
 function Fields({ s }: { s?: StaffDTO }) {
   return (
     <div className="grid gap-3">
@@ -25,10 +67,7 @@ function Fields({ s }: { s?: StaffDTO }) {
         Name
         <input name="name" defaultValue={s?.name} required className={input} placeholder="Dr. Jane Doe" />
       </label>
-      <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
-        Specialties
-        <input name="specialties" defaultValue={s?.specialties} className={input} placeholder="Surgery, Dentistry" />
-      </label>
+      <SpecialtiesPicker initial={s?.specialties ?? ""} />
       <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
         Bio
         <textarea name="bio" defaultValue={s?.bio} rows={2} className={input} placeholder="A short introduction…" />
